@@ -32,13 +32,9 @@ app.use(express.json());
 // Mount routes
 app.use('/', routes);
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    status: 'error',
-    message: 'Internal Server Error',
-  });
-});
+const errorHandler = require('./middleware/errorHandler');
+
+// Error handling middleware (must be last)
+app.use(errorHandler);
 
 module.exports = app;
