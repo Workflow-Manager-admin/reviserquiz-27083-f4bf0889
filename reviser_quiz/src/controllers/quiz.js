@@ -1,5 +1,6 @@
 const path = require('path');
 const textExtractionService = require('../services/textExtraction');
+const mcqGeneratorService = require('../services/mcqGenerator');
 
 /**
  * Handles POST /quiz/upload file upload requests.
@@ -43,12 +44,25 @@ class QuizController {
       extractionError = err && err.message ? err.message : String(err);
     }
 
-    // Return both file info and text extraction result (or error)
+    // MCQ Generation step (only if text extraction succeeded and no extractionError)
+    let mcqResult = null;
+    let mcqError = null;
+    if (textExtractionResult.text && !extractionError) {
+      try {
+        mcqResult = await mcqGeneratorService.generateMCQs(textExtractionResult.text);
+      } catch (err) {
+        mcqError = err && err.message ? err.message : String(err);
+      }
+    }
+
+    // Return file info, text extraction result/error, and MCQ generation results/errors
     return res.status(200).json({
       status: 'success',
       file: fileInfo,
       textExtracted: textExtractionResult.text || null,
-      textExtractionError: extractionError
+      textExtractionError: extractionError,
+      mcqs: mcqResult && mcqResult.mcqs ? mcqResult.mcqs : null,
+      mcqGenerationError: mcqError,
     });
   }
 }
