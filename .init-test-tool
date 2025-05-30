@@ -1,0 +1,4 @@
+{
+    "command": "npm run test",
+    "working_directory": "/home/kavia/workspace/code-generation/reviserquiz-27083-f4bf0889/reviser_quiz"
+}
