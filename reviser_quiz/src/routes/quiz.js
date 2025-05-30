@@ -88,4 +88,106 @@ router.post(
   quizController.uploadFile
 );
 
+/**
+ * @swagger
+ * /quiz/{quizId}/question/{index}:
+ *   get:
+ *     summary: Retrieve a single MCQ for a given quiz session (by quizId and question index).
+ *     parameters:
+ *       - in: path
+ *         name: quizId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The unique quiz session ID returned by /upload.
+ *       - in: path
+ *         name: index
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The question index (0-based).
+ *     responses:
+ *       200:
+ *         description: Returns the MCQ question (without correct answer/explanation).
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 question:
+ *                   type: object
+ *                 index:
+ *                   type: integer
+ *                 totalQuestions:
+ *                   type: integer
+ *                 quizId:
+ *                   type: string
+ *       400:
+ *         description: Invalid index or missing parameter.
+ *       404:
+ *         description: Quiz session or question not found.
+ */
+router.get('/:quizId/question/:index', quizController.getQuestion.bind(quizController));
+
+/**
+ * @swagger
+ * /quiz/{quizId}/answer/{index}:
+ *   post:
+ *     summary: Submit an answer for a given MCQ in a quiz session.
+ *     parameters:
+ *       - in: path
+ *         name: quizId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The unique quiz session ID.
+ *       - in: path
+ *         name: index
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The question index (0-based).
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - answer
+ *             properties:
+ *               answer:
+ *                 type: string
+ *                 description: The answer submitted (could be text or option index depending on quiz format).
+ *     responses:
+ *       200:
+ *         description: Returns grading result and explanation.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 correct:
+ *                   type: boolean
+ *                 explanation:
+ *                   type: string
+ *                 correctAnswer:
+ *                   type: string
+ *                 userAnswer:
+ *                   type: string
+ *                 index:
+ *                   type: integer
+ *       400:
+ *         description: Invalid request or index.
+ *       404:
+ *         description: Quiz session or question not found.
+ */
+router.post('/:quizId/answer/:index', express.json(), quizController.submitAnswer.bind(quizController));
+
 module.exports = router;
