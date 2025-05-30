@@ -76,16 +76,20 @@ router.post(
               errorMessage = err.message;
               break;
           }
-          return res.status(400).json({ status: 'error', message: errorMessage });
+          err.status = 400;
+          err.message = errorMessage;
+          return next(err);
         } else {
           // Other errors
-          return res.status(500).json({ status: 'error', message: 'An unexpected error occurred during upload.' });
+          const wrappedErr = new Error('An unexpected error occurred during upload.');
+          wrappedErr.status = 500;
+          return next(wrappedErr);
         }
       }
       next();
     });
   },
-  quizController.uploadFile
+  quizController.uploadFile.bind(quizController)
 );
 
 /**
@@ -189,5 +193,41 @@ router.get('/:quizId/question/:index', quizController.getQuestion.bind(quizContr
  *         description: Quiz session or question not found.
  */
 router.post('/:quizId/answer/:index', express.json(), quizController.submitAnswer.bind(quizController));
+
+/**
+ * @swagger
+ * /quiz/{quizId}/progress:
+ *   get:
+ *     summary: Get quiz session progress (number answered out of total).
+ *     parameters:
+ *       - in: path
+ *         name: quizId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The unique quiz session ID.
+ *     responses:
+ *       200:
+ *         description: Returns progress information.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 quizId:
+ *                   type: string
+ *                 answered:
+ *                   type: integer
+ *                 totalQuestions:
+ *                   type: integer
+ *                 progress:
+ *                   type: integer
+ *       404:
+ *         description: Quiz session not found.
+ */
+router.get('/:quizId/progress', quizController.getProgress.bind(quizController));
 
 module.exports = router;
